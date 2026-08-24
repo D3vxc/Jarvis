@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JARVIS — Voice Assistant</title>
+    <link rel="stylesheet" href="css/jarvis.css" />
+  </head>
+  <body data-theme="arc">
+    <canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+    <div id="app">
+      <header class="hud-top">
+        <div class="brand">
+          JARVIS
+          <small>Clap-Activated Voice Core</small>
+        </div>
+
+        <div class="pills">
+          <div class="pill" id="netPill">
+            <span class="dot" id="netDot"></span>
+            <span id="netText">Checking network...</span>
+          </div>
+          <div class="pill" id="micPill">
+            <span class="dot" id="micDot"></span>
+            <span id="micText">Microphone idle</span>
+          </div>
+          <div class="pill" id="llmPill">
+            <span class="dot" id="llmDot"></span>
+            <span id="llmText">Checking answer engine...</span>
+          </div>
+        </div>
+      </header>
+
+      <main id="core">
+        <div id="reactor" class="reactor">
+          <div class="reactor-ring reactor-ring--outer"></div>
+          <div class="reactor-ring reactor-ring--mid"></div>
+          <div class="reactor-ring reactor-ring--inner"></div>
+          <div class="reactor-core">
+            <span id="reactorState">STANDBY</span>
+          </div>
+        </div>
+
+        <p class="hint" id="hint">
+          Clap twice to wake me, or press the button below.
+        </p>
+
+        <div class="level-meter" aria-hidden="true">
+          <div class="level-fill" id="levelFill"></div>
+          <div class="level-threshold" id="levelThreshold"></div>
+        </div>
+
+        <div class="core-actions">
+          <button type="button" id="listenBtn" class="btn btn--primary">
+            Enable Microphone
+          </button>
+          <button type="button" id="wakeBtn" class="btn">Wake Manually</button>
+          <button type="button" id="stopBtn" class="btn btn--danger">
+            Stop Speaking
+          </button>
+        </div>
+
+        <form id="textForm" class="text-form">
+          <input
+            id="textInput"
+            type="text"
+            autocomplete="off"
+            placeholder="Or type a command and press Enter..."
+          />
+          <button type="submit" class="btn btn--ghost">Send</button>
+        </form>
+
+        <div id="transcript" class="transcript">
+          <div class="transcript-empty" id="transcriptEmpty">
+            Conversation log will appear here.
+          </div>
+        </div>
+      </main>
+
+      <aside id="panel">
+        <section class="panel-block">
+          <h2>Voice</h2>
+
+          <label class="field">
+            <span class="field-label">Voice</span>
+            <select id="voiceSelect"></select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">
+              Rate <output id="rateOut">1.00</output>
+            </span>
+            <input id="rate" type="range" min="0.5" max="2" step="0.05" value="1" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">
+              Pitch <output id="pitchOut">1.00</output>
+            </span>
+            <input id="pitch" type="range" min="0" max="2" step="0.05" value="1" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">
+              Volume <output id="volumeOut">1.00</output>
+            </span>
+            <input id="volume" type="range" min="0" max="1" step="0.05" value="1" />
+          </label>
+
+          <button type="button" id="previewBtn" class="btn btn--ghost btn--block">
+            Preview Voice
+          </button>
+        </section>
+
+        <section class="panel-block">
+          <h2>Clap Trigger</h2>
+
+          <label class="field">
+            <span class="field-label">
+              Sensitivity <output id="sensOut">0.55</output>
+            </span>
+            <input id="sensitivity" type="range" min="0.05" max="0.95" step="0.05" value="0.55" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">
+              Max gap between claps <output id="gapOut">700 ms</output>
+            </span>
+            <input id="gap" type="range" min="250" max="1200" step="50" value="700" />
+          </label>
+
+          <label class="field field--row">
+            <input id="requireOnline" type="checkbox" checked />
+            <span>Only respond while online</span>
+          </label>
+
+          <label class="field field--row">
+            <input id="chimeOnWake" type="checkbox" checked />
+            <span>Play chime on wake</span>
+          </label>
+
+          <p class="claps-read">
+            Claps detected: <strong id="clapCount">0</strong>
+          </p>
+        </section>
+
+        <section class="panel-block">
+          <h2>Background</h2>
+
+          <label class="field">
+            <span class="field-label">Theme</span>
+            <select id="themeSelect">
+              <option value="arc">Arc Reactor (cyan)</option>
+              <option value="plasma">Plasma (magenta)</option>
+              <option value="matrix">Grid (green)</option>
+              <option value="void">Void (minimal)</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">
+              Motion <output id="motionOut">1.00</output>
+            </span>
+            <input id="motion" type="range" min="0" max="2" step="0.05" value="1" />
+          </label>
+
+          <label class="field field--row">
+            <input id="reactive" type="checkbox" checked />
+            <span>React to microphone level</span>
+          </label>
+        </section>
+
+        <section class="panel-block">
+          <h2>Commands</h2>
+          <ul class="cmd-list">
+            <li><code>what time is it</code></li>
+            <li><code>what's the date</code></li>
+            <li><code>weather</code> <span>needs internet + location</span></li>
+            <li><code>open youtube</code> / <code>open github</code></li>
+            <li><code>search for &lt;query&gt;</code></li>
+            <li><code>play &lt;song&gt; on youtube</code></li>
+            <li><code>speak faster</code> / <code>slower</code> / <code>louder</code></li>
+            <li><code>go to sleep</code></li>
+          </ul>
+          <p class="claps-read">
+            Anything else is answered by Claude, with web search when the
+            server has it enabled.
+          </p>
+        </section>
+      </aside>
+    </div>
+
+    <div id="errorBanner"></div>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
