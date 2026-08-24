@@ -23,7 +23,32 @@ clap clap  →  microphone wakes  →  speech recognition  →  command router
 | **Claude-powered answers** | Unmatched questions go to `claude-opus-5` through a local proxy, with server-side web search for current facts. The API key stays on the server. |
 | **Works degraded** | No key, no server, no microphone, or no speech recognition — it still runs, with a text box and built-in commands. |
 
-## Quick start
+## Two ways to run it
+
+| | Desktop app | Browser |
+|---|---|---|
+| Starts with your computer, lives in the tray | ✅ | ❌ |
+| Wakes with no window open | ✅ | ❌ — a tab must be open |
+| Needs a terminal or a localhost URL | ❌ | ✅ |
+| Speech to text | needs a provider key, or type | ✅ built into Chrome/Edge |
+
+**Want it to just be there?** Use the desktop app — full guide in
+[`docs/DESKTOP.md`](docs/DESKTOP.md).
+
+```bash
+npm install
+npm run desktop
+```
+
+Or build an installer with no terminal at all: the repository's **Actions** tab →
+**Build desktop apps** → **Run workflow** produces a `.exe`, `.dmg`, and
+`.AppImage` you can download and install.
+
+On first run, paste your Anthropic API key into the **Assistant Setup** panel —
+no `.env` file, no editing. Then close the window; it keeps listening from the
+tray. Clap twice, or press **Ctrl+Alt+J**, to bring it back.
+
+## Browser version
 
 ```bash
 git clone https://github.com/D3vxc/Jarvis.git
@@ -78,7 +103,11 @@ notes when an answer used web search.
 ## How the parts fit together
 
 ```
-server.js                 Express: serves public/, proxies POST /api/ask to Claude
+desktop/main.js           Electron: tray, autostart, hidden window, IPC to Claude
+desktop/preload.cjs       The renderer's only bridge to the app
+desktop/transcribe.js     Optional speech to text (Deepgram / Whisper)
+lib/claude.js             The answer engine, shared by both surfaces
+server.js                 Express server — browser version only
 public/js/app.js          Wiring, state machine, transcript, settings panel
 public/js/audio.js        Microphone + double-clap detector + wake chime
 public/js/recognizer.js   Web Speech API recognition (Chrome/Edge)
@@ -89,8 +118,9 @@ public/js/background.js   Animated canvas backdrop
 public/js/settings.js     localStorage persistence
 ```
 
-More detail in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the full command
-grammar and the clap-tuning guide are in [`docs/COMMANDS.md`](docs/COMMANDS.md).
+More detail in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), the desktop app in
+[`docs/DESKTOP.md`](docs/DESKTOP.md), and the full command grammar plus the
+clap-tuning guide in [`docs/COMMANDS.md`](docs/COMMANDS.md).
 
 ## Browser support
 
@@ -107,6 +137,8 @@ serves on localhost, so it works out of the box.
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| **`ERR_CONNECTION_REFUSED` at localhost:3000** | The server is not running — usually `npm install` failed, `npm start` exited, or the terminal was closed | Check the terminal `npm start` runs in: it must stay open and print *Jarvis running at…*. If it printed an error, paste it. Or skip the server entirely and use the desktop app |
+| Port 3000 already in use | Something else holds the port | `PORT=3100 npm start`, then open `localhost:3100` |
 | Claps do nothing | Threshold too high for your room | Raise **Sensitivity**; the meter's yellow marker is the trigger point |
 | It wakes at random | Threshold too low | Lower **Sensitivity**, or shorten the gap window |
 | Pill reads *Claude offline* | No `ANTHROPIC_API_KEY`, or the page was opened as a file | Put the key in `.env`, restart, and load via `http://localhost:3000` |
@@ -115,7 +147,8 @@ serves on localhost, so it works out of the box.
 
 ## Privacy
 
-The microphone stream is analysed in the browser and never uploaded by this app.
+While listening, the microphone is open continuously. The stream is analysed in
+memory for the clap pattern and is never recorded or uploaded by this app.
 Speech **recognition** is different: Chrome and Edge send audio to Google's servers,
 which is why recognition needs an internet connection. When a question reaches the
 answer engine, that question text — and the recent turns of the conversation — go to

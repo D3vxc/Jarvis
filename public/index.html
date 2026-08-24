@@ -79,6 +79,56 @@
       </main>
 
       <aside id="panel">
+        <section class="panel-block panel-block--hidden" id="desktopBlock">
+          <h2>Assistant Setup</h2>
+
+          <label class="field">
+            <span class="field-label">
+              Anthropic API key <output id="keyState">not set</output>
+            </span>
+            <input
+              id="apiKeyInput"
+              type="password"
+              autocomplete="off"
+              placeholder="sk-ant-..."
+            />
+          </label>
+
+          <label class="field">
+            <span class="field-label">Speech to text</span>
+            <select id="sttProvider">
+              <option value="none">Off — type commands</option>
+              <option value="deepgram">Deepgram</option>
+              <option value="openai">OpenAI Whisper</option>
+            </select>
+          </label>
+
+          <label class="field" id="sttKeyField">
+            <span class="field-label">
+              Speech key <output id="sttKeyState">not set</output>
+            </span>
+            <input
+              id="sttKeyInput"
+              type="password"
+              autocomplete="off"
+              placeholder="Provider API key"
+            />
+          </label>
+
+          <label class="field field--row">
+            <input id="autoStart" type="checkbox" />
+            <span>Start Jarvis when I log in</span>
+          </label>
+
+          <button type="button" id="saveSetupBtn" class="btn btn--ghost btn--block">
+            Save Setup
+          </button>
+
+          <p class="claps-read" id="setupNote">
+            Keys are stored on this computer only, and never reach the page.
+          </p>
+        </section>
+
         <section class="panel-block">
           <h2>Voice</h2>
 

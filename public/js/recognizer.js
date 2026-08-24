@@ -1,7 +1,13 @@
 const SpeechRecognitionCtor =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
-export const recognitionSupported = Boolean(SpeechRecognitionCtor);
+/**
+ * Electron exposes the constructor but not the Google credentials behind it, so
+ * every session fails with "not-allowed". Treat the desktop app as having no
+ * recognition at all and let it use the recording path instead.
+ */
+export const recognitionSupported =
+  Boolean(SpeechRecognitionCtor) && !window.jarvisDesktop;
 
 /**
  * Single-shot speech recognition. Browsers stream this to a cloud service, so
@@ -17,6 +23,7 @@ export class Recognizer {
     this.recognition = null;
 
     if (!recognitionSupported) return;
+
 
     const recognition = new SpeechRecognitionCtor();
     recognition.lang = navigator.language || "en-US";

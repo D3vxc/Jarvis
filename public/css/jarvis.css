@@ -452,6 +452,28 @@ body {
   accent-color: var(--accent);
 }
 
+.panel-block--hidden {
+  display: none;
+}
+
+.field input[type="password"],
+.field input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.field input[type="password"]:focus,
+.field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .claps-read {
   margin: 0;
   font-size: 12px;
